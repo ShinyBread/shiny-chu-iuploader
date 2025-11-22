@@ -83,6 +83,7 @@
 
 {% block scripts %}
 <script>
+    // --- Función original de Copiar ---
     function copyToClipboard(btn) {
         var copyText = document.getElementById("shareUrl");
         copyText.select();
@@ -100,5 +101,43 @@
             btn.classList.add("bg-red-600", "hover:bg-red-700");
         }, 2000);
     }
+
+    // --- NUEVO: Lógica para pegar imagen (Ctrl + V) ---
+    document.addEventListener('paste', function(event) {
+        // 1. Obtener los datos del portapapeles
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+
+        // 2. Buscar si hay una imagen
+        for (const item of items) {
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                
+                // 3. Encontrar el input y el formulario
+                const fileInput = document.querySelector('input[type="file"]');
+                const form = document.querySelector('form');
+                
+                // Si estamos en la pantalla de "Upload Complete", el form no existe, así que no hacemos nada
+                if (!fileInput || !form) return;
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+
+                // 4. Asignar el archivo al input usando DataTransfer
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+
+                // 5. Feedback visual (Cambiar botón a verde)
+                submitBtn.innerText = "Uploading pasted image... 🚀";
+                submitBtn.classList.remove('from-red-600', 'to-red-800'); // Quitamos rojo
+                submitBtn.classList.add('from-green-600', 'to-green-800', 'animate-pulse'); // Ponemos verde
+
+                // 6. Enviar formulario automáticamente
+                form.submit();
+                
+                event.preventDefault(); // Evitar comportamiento default del navegador
+                break; 
+            }
+        }
+    });
 </script>
 {% endblock %}
