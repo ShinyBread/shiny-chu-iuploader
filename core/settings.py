@@ -28,7 +28,7 @@ DEBUG = 'RENDER' not in os.environ
 
 # Aquí defines quién puede ver tu web. 
 # Importante: Agregamos el subdominio 'i' y el host de Render
-ALLOWED_HOSTS = ['*'] # Por ahora '*' para facilitar, luego lo cerramos a 'i.shinychu.com'
+ALLOWED_HOSTS = ['i.shinychu.com', 'shiny-chu-iuploader.onrender.com']
 
 
 # Application definition
