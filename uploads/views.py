@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.management import call_command
 from .forms import ImageUploadForm
@@ -34,6 +35,10 @@ def image_view(request, short_code):
 
 def admin_shiny_view(request):
     if request.method == 'POST':
+        if 'logout' in request.POST:
+            logout(request)
+            return redirect('shiny_admin') 
+        
         if 'cleanup' in request.POST:
             if not request.user.is_authenticated:
                 return redirect('shiny_admin')
