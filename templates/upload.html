@@ -1,87 +1,134 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Upload - Shinychu{% endblock %}
+{% block title %}Shinychu - VCR Mode{% endblock %}
 
 {% block extra_css %}
 <style>
-    .glass {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+
+    :root {
+        --blue: #000000;
+        --green: #1eff00;
     }
 
-    .file-input::file-selector-button {
-        background: #dc2626;
-        color: white;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 0.375rem;
-        cursor: pointer;
-        margin-right: 1rem;
-        transition: background 0.3s;
+    /* --- EFECTOS CRT (Scanlines, Ruido, Vignette) --- */
+    .vignette::before {
+        content: ''; position: absolute; inset: 0;
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+        z-index: 500; mix-blend-mode: overlay; pointer-events: none;
     }
 
-    .file-input::file-selector-button:hover {
-        background: #b91c1c;
+    .noise {
+        position: fixed; inset: 0; z-index: 400; opacity: 0.05; pointer-events: none;
+        background: url('https://ice-creme.de/images/background-noise.png');
+    }
+    .noise-moving {
+        opacity: 0.08; z-index: 450; animation: noise 1s infinite alternate;
+    }
+    .scanlines {
+        position: fixed; inset: 0; pointer-events: none; z-index: 300; opacity: 0.6;
+        background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.5) 51%);
+        background-size: 100% 4px; animation: scanlines 0.2s linear infinite;
     }
 
-    @keyframes blob {
-        0% { transform: translate(0px, 0px) scale(1); }
-        33% { transform: translate(30px, -50px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-        100% { transform: translate(0px, 0px) scale(1); }
+    /* Animaciones Keyframes */
+    @keyframes noise { 0%, 100% { background-position: 0 0; } 10% { background-position: -5% -10%; } 20% { background-position: -15% 5%; } 30% { background-position: 7% -25%; } 40% { background-position: 20% 25%; } 50% { background-position: -25% 10%; } 60% { background-position: 15% 5%; } 70% { background-position: 0 15%; } 80% { background-position: 25% 35%; } 90% { background-position: -10% 10%; } }
+    @keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 4px; } }
+    @keyframes rgbText {
+        0% { text-shadow: -2px 2px 0 red, 2px -2px 0 blue; }
+        25% { text-shadow: 2px 2px 0 red, -2px -2px 0 blue; }
+        50% { text-shadow: -2px -2px 0 red, 2px 2px 0 blue; }
+        75% { text-shadow: 2px -2px 0 red, -2px 2px 0 blue; }
+        100% { text-shadow: -2px 2px 0 red, 2px -2px 0 blue; }
     }
-    .animate-blob { animation: blob 7s infinite; }
-    .animation-delay-2000 { animation-delay: 2s; }
+    @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+
+
+    .hud-anim { animation: rgbText 2s steps(9) infinite alternate; }
+    .retro-shadow-box { box-shadow: 10px 10px 0px var(--blue); }
+    .retro-text-shadow { text-shadow: 2px 2px 0px var(--blue); }
+    .uploading { background: var(--green) !important; color: black !important; animation: blink 0.5s infinite; }
+    
+    /* Estilo del input file nativo */
+    input[type="file"] { font-family: 'Press Start 2P', cursive; font-size: 0.7rem; color: white; width: 100%; }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="absolute top-0 left-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none"></div>
-    <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+    <div class="noise"></div>
+    <div class="noise noise-moving"></div>
 
-    <div class="relative z-10 text-center space-y-8 p-10 rounded-2xl glass max-w-md w-full shadow-2xl">
-        <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-500 drop-shadow-sm">
-            Upload
-        </h1>
-        <p class="text-gray-400 text-lg">mrow</p>
+    <div class="relative w-screen h-screen bg-[#270245] text-white flex flex-col justify-center items-center overflow-hidden">
+        
+        <div class="absolute top-8 left-8 text-2xl hud-anim pointer-events-none z-50">PLAY ►</div>
+        <div class="absolute top-8 right-8 text-2xl hud-anim pointer-events-none z-50" id="clock">00:00:00</div>
+        <div class="absolute bottom-8 left-8 text-2xl hud-anim pointer-events-none z-50 text-red-500">REC ●</div>
 
-        {% if url_resultado %}
-        <div class="bg-green-900/50 border border-green-500/30 p-6 rounded-xl animate-fade-in-up">
-            <p class="text-green-300 font-semibold mb-2">Upload Complete!</p>
+        <div class="relative z-[600] border-4 border-white bg-black/80 p-8 text-center max-w-[500px] w-[90%] retro-shadow-box">
+            
+            <h1 class="text-2xl mb-8 leading-normal text-[#02ff00] retro-text-shadow">
+                UPLOAD YOUR IMAGE!
+            </h1>
 
-            <div class="flex items-center gap-2 bg-black/40 p-3 rounded-lg border border-red-500/30 w-full mb-4">
-                <input type="text" value="{{ url_resultado }}" readonly
-                    class="bg-transparent text-red-200 text-sm w-full outline-none px-2 font-mono" id="shareUrl">
-                <button onclick="copyToClipboard(this)"
-                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-bold transition-colors whitespace-nowrap">
-                    Copy
-                </button>
-            </div>
+            {% if url_resultado %}
+                <div class="border-2 border-[#00ff00] p-4 mb-4 bg-[#002200]">
+                    <p class="text-[#00ff00] text-xs mb-4">UPLOAD COMPLETE!</p>
+                    
+                    <input type="text" value="{{ url_resultado }}" readonly 
+                           class="bg-transparent border-none text-[#00ff00] text-xs w-full mb-4 text-center focus:outline-none font-['Press_Start_2P']" 
+                           id="shareUrl">
+                    
+                    <button onclick="copyToClipboard(this)" 
+                            class="bg-[#2b52ff] text-white border-4 border-white py-4 px-8 text-xs cursor-pointer uppercase transition-transform hover:bg-[#fd5d8d] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 w-full font-['Press_Start_2P']">
+                        COPY LINK
+                    </button>
+                </div>
 
-            <p class="text-xs text-gray-400 mt-4 uppercase tracking-widest">Ready to share</p>
+                <a href="/" class="text-white text-[0.7rem] block mt-4 no-underline hover:text-[#fd5d8d]">
+                    [ UPLOAD ANOTHER ]
+                </a>
 
-            <a href="/" class="inline-block mt-6 text-sm text-white border border-white/20 hover:bg-white/10 px-6 py-2 rounded-full transition-all duration-300">
-                Upload another
-            </a>
+            {% else %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-8 border-2 border-dashed border-white p-4 cursor-pointer hover:bg-white/10 transition-colors">
+                        {{ form.image }}
+                    </div>
+
+                    <button type="submit" class="bg-[#2b52ff] text-white border-4 border-white py-4 px-8 text-base cursor-pointer uppercase transition-transform hover:bg-[#fd5d8d] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 w-full font-['Press_Start_2P']" id="uploadBtn">
+                        START UPLOAD
+                    </button>
+                </form>
+                
+                <p class="text-[0.6rem] text-gray-400 mt-4 uppercase">PRESS CTRL+V TO PASTE</p>
+            {% endif %}
         </div>
-        {% else %}
-        <form method="post" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            <div class="relative group">
-                {{ form.image }}
-            </div>
-            <button type="submit"
-                class="w-full bg-gradient-to-r from-red-600 to-red-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 hover:brightness-110 hover:shadow-red-500/30">
-                Upload Image
-            </button>
-        </form>
-        {% endif %}
+
     </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    // --- RELOJ EN TIEMPO REAL ---
+    function updateTime() {
+        const now = new Date();
+        // Formato HH:MM:SS
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+        });
+        document.getElementById('clock').innerText = timeString;
+    }
+    // Actualizar cada segundo
+    setInterval(updateTime, 1000);
+    updateTime(); // Llamada inicial para no esperar 1 segundo
+
+    // --- Lógica de Copiar ---
     function copyToClipboard(btn) {
         var copyText = document.getElementById("shareUrl");
         copyText.select();
@@ -89,38 +136,41 @@
         navigator.clipboard.writeText(copyText.value);
 
         let originalText = btn.innerText;
-        btn.innerText = "Copied!";
-        btn.classList.add("bg-green-600", "hover:bg-green-700");
-        btn.classList.remove("bg-red-600", "hover:bg-red-700");
+        btn.innerText = "COPIED!";
+        btn.style.background = "#00ff00"; // Verde retro
+        btn.style.color = "black";
 
         setTimeout(() => {
             btn.innerText = originalText;
-            btn.classList.remove("bg-green-600", "hover:bg-green-700");
-            btn.classList.add("bg-red-600", "hover:bg-red-700");
+            btn.style.background = ""; 
+            btn.style.color = "";
         }, 2000);
     }
 
+    // --- Lógica de Pegar (Ctrl+V) ---
     document.addEventListener('paste', function(event) {
-        
         const items = (event.clipboardData || event.originalEvent.clipboardData).items;
 
-        
         for (const item of items) {
             if (item.kind === 'file' && item.type.startsWith('image/')) {
                 const file = item.getAsFile();
                 const fileInput = document.querySelector('input[type="file"]');
                 const form = document.querySelector('form');
+                
                 if (!fileInput || !form) return;
-                const submitBtn = form.querySelector('button[type="submit"]'); 
+
+                const submitBtn = document.getElementById('uploadBtn');
+
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 fileInput.files = dataTransfer.files;
-                submitBtn.innerText = "Uploading pic mrow...";
-                submitBtn.classList.remove('from-red-600', 'to-red-800'); 
-                submitBtn.classList.add('from-green-600', 'to-green-800', 'animate-pulse'); 
+
+                submitBtn.innerText = "PROCESSING...";
+                submitBtn.classList.add('uploading');
+
                 form.submit();
                 event.preventDefault();
-                break; 
+                break;
             }
         }
     });

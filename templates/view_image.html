@@ -10,11 +10,63 @@
     <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
 
-{% block content %}
-    <div class="relative w-full h-full flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-red-600/10 blur-3xl pointer-events-none"></div>
+{% block extra_css %}
+<style>
+    
+    :root {
+        --blue: #000000;
+        --green: #1eff00;
+    }
 
-        <img src="{{ image_url }}" alt="Shiny Pic"
-            class="relative z-10 max-w-full max-h-screen object-contain drop-shadow-2xl rounded-lg">
-    </div>
+    
+    .vignette::before {
+        content: ''; position: absolute; inset: 0;
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+        z-index: 500; mix-blend-mode: overlay; pointer-events: none;
+    }
+    .noise {
+        position: fixed; inset: 0; z-index: 400; opacity: 0.05; pointer-events: none;
+        background: url('https://ice-creme.de/images/background-noise.png');
+    }
+    .noise-moving {
+        opacity: 0.08; z-index: 450; animation: noise 1s infinite alternate;
+    }
+    .scanlines {
+        position: fixed; inset: 0; pointer-events: none; z-index: 300; opacity: 0.6;
+        background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.5) 51%);
+        background-size: 100% 4px; animation: scanlines 0.2s linear infinite;
+    }
+
+    /* Keyframes */
+    @keyframes noise { 0%, 100% { background-position: 0 0; } 10% { background-position: -5% -10%; } 20% { background-position: -15% 5%; } 30% { background-position: 7% -25%; } 40% { background-position: 20% 25%; } 50% { background-position: -25% 10%; } 60% { background-position: 15% 5%; } 70% { background-position: 0 15%; } 80% { background-position: 25% 35%; } 90% { background-position: -10% 10%; } }
+    @keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 4px; } }
+    
+    /* HUD */
+    @keyframes rgbText {
+        0% { text-shadow: -2px 2px 0 red, 2px -2px 0 blue; }
+        50% { text-shadow: -2px -2px 0 red, 2px 2px 0 blue; }
+        100% { text-shadow: -2px 2px 0 red, 2px -2px 0 blue; }
+    }
+    .hud-anim { animation: rgbText 2s steps(9) infinite alternate; }
+
+    
+    .retro-frame {
+        box-shadow: 10px 10px 0px var(--blue);
+    }
+</style>
 {% endblock %}
+
+{% block content %}
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+    <div class="noise"></div>
+    <div class="noise noise-moving"></div>
+
+    <div class="relative w-screen h-screen bg-[#270245] flex flex-col justify-center items-center overflow-hidden p-4">
+        
+        <div class="absolute top-8 left-8 text-xl hud-anim pointer-events-none z-50 text-white">PLAY ►</div>
+        <div class="absolute top-8 right-8 text-xl hud-anim pointer-events-none z-50 text-white font-mono">CH-01</div>
+
+        <div class="relative z-[600] border-4 border-white bg-black p-2 retro-frame max-h-[80vh] max-w-[90vw] flex flex-col">
+            
+            <img src="{{

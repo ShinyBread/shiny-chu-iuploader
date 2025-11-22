@@ -28,9 +28,13 @@ if 'DEBUG' in os.environ:
 else:
     DEBUG = True
 
-# Aquí defines quién puede ver tu web. 
-# Importante: Agregamos el subdominio 'i' y el host de Render
-ALLOWED_HOSTS = ['i.shinychu.com', 'shiny-chu-iuploader.onrender.com']
+
+ALLOWED_HOSTS = [
+    'i.shinychu.com', 
+    'shiny-chu-iuploader.onrender.com', 
+    '127.0.0.1', 
+    'localhost'
+]
 
 
 # Application definition
@@ -126,7 +130,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    BASE_DIR / "core" / "static",
+
+    BASE_DIR / 'core' / 'static',
 ]
 
 MEDIA_URL = '/media/'
@@ -136,11 +141,12 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
+        
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Configuración opcional de Cloudinary (Login secure)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_URL', '').split('@')[-1],
     'API_SECRET': os.getenv('CLOUDINARY_URL', '').split(':')[-1].split('@')[0],
