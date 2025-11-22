@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-clave-temporal')
 
 # DEBUG: True solo si estamos en local
-DEBUG = 'RENDER' not in os.environ
+DEBUG = 'TRUE' not in os.environ
 
 # Aquí defines quién puede ver tu web. 
 # Importante: Agregamos el subdominio 'i' y el host de Render
