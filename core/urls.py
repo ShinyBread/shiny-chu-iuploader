@@ -4,10 +4,11 @@ from uploads import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # Ruta principal (Home) para subir fotos
+    path('shiny/', views.admin_shiny_view, name='shiny_admin'),
+    path('admin/', admin.site.urls),
+    # Home
     path('', views.upload_view, name='home'),
-    
-    # Ruta dinámica: captura cualquier cosa (ej: 'Ab3x') y la manda a la vista
+    #dinamically generated image view
     path('<str:short_code>/', views.image_view, name='image_detail'),
+    
 ]
