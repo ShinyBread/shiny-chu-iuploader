@@ -23,8 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Seguridad: Lee del .env, si no existe usa una clave insegura por defecto
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-clave-temporal')
 
-# DEBUG: True solo si estamos en local
-DEBUG = 'TRUE' not in os.environ
+if 'DEBUG' in os.environ:
+    DEBUG = os.environ.get('DEBUG') == 'TRUE'
+else:
+    DEBUG = True
 
 # Aquí defines quién puede ver tu web. 
 # Importante: Agregamos el subdominio 'i' y el host de Render
