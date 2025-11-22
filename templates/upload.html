@@ -1,52 +1,48 @@
-<!DOCTYPE html>
-<html>
+{% extends 'base.html' %}
 
-<head>
-    <title>Upload</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Fredoka', sans-serif;
-        }
+{% block title %}Upload - Shinychu{% endblock %}
 
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+{% block extra_css %}
+<style>
+    .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        .file-input::file-selector-button {
-            background: #dc2626;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            margin-right: 1rem;
-            transition: background 0.3s;
-        }
+    .file-input::file-selector-button {
+        background: #dc2626;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        margin-right: 1rem;
+        transition: background 0.3s;
+    }
 
-        .file-input::file-selector-button:hover {
-            background: #b91c1c;
-        }
-    </style>
-</head>
+    .file-input::file-selector-button:hover {
+        background: #b91c1c;
+    }
 
-<body
-    class="bg-gradient-to-br from-black via-gray-900 to-red-950 text-white h-screen flex items-center justify-center overflow-hidden">
+    /* Animaciones de fondo solo para el upload */
+    @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob { animation: blob 7s infinite; }
+    .animation-delay-2000 { animation-delay: 2s; }
+</style>
+{% endblock %}
 
-    <!-- Decorative blobs -->
-    <div
-        class="absolute top-0 left-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
-    </div>
-    <div
-        class="absolute bottom-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
-    </div>
+{% block content %}
+    <div class="absolute top-0 left-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
 
     <div class="relative z-10 text-center space-y-8 p-10 rounded-2xl glass max-w-md w-full shadow-2xl">
-        <h1
-            class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-500 drop-shadow-sm">
+        <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-500 drop-shadow-sm">
             Upload
         </h1>
         <p class="text-gray-400 text-lg">Host your images in style.</p>
@@ -66,19 +62,16 @@
 
             <p class="text-xs text-gray-400 mt-4 uppercase tracking-widest">Ready to share</p>
 
-            <a href="/"
-                class="inline-block mt-6 text-sm text-white border border-white/20 hover:bg-white/10 px-6 py-2 rounded-full transition-all duration-300">
+            <a href="/" class="inline-block mt-6 text-sm text-white border border-white/20 hover:bg-white/10 px-6 py-2 rounded-full transition-all duration-300">
                 Upload another
             </a>
         </div>
         {% else %}
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
-
             <div class="relative group">
                 {{ form.image }}
             </div>
-
             <button type="submit"
                 class="w-full bg-gradient-to-r from-red-600 to-red-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 hover:brightness-110 hover:shadow-red-500/30">
                 Upload Image
@@ -86,54 +79,26 @@
         </form>
         {% endif %}
     </div>
+{% endblock %}
 
-    <script>
-        function copyToClipboard(btn) {
-            var copyText = document.getElementById("shareUrl");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyText.value);
+{% block scripts %}
+<script>
+    function copyToClipboard(btn) {
+        var copyText = document.getElementById("shareUrl");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
 
-            let originalText = btn.innerText;
-            btn.innerText = "Copied!";
-            btn.classList.add("bg-green-600", "hover:bg-green-700");
-            btn.classList.remove("bg-red-600", "hover:bg-red-700");
+        let originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        btn.classList.add("bg-green-600", "hover:bg-green-700");
+        btn.classList.remove("bg-red-600", "hover:bg-red-700");
 
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.classList.remove("bg-green-600", "hover:bg-green-700");
-                btn.classList.add("bg-red-600", "hover:bg-red-700");
-            }, 2000);
-        }
-    </script>
-
-    <style>
-        @keyframes blob {
-            0% {
-                transform: translate(0px, 0px) scale(1);
-            }
-
-            33% {
-                transform: translate(30px, -50px) scale(1.1);
-            }
-
-            66% {
-                transform: translate(-20px, 20px) scale(0.9);
-            }
-
-            100% {
-                transform: translate(0px, 0px) scale(1);
-            }
-        }
-
-        .animate-blob {
-            animation: blob 7s infinite;
-        }
-
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
-    </style>
-</body>
-
-</html>
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.classList.remove("bg-green-600", "hover:bg-green-700");
+            btn.classList.add("bg-red-600", "hover:bg-red-700");
+        }, 2000);
+    }
+</script>
+{% endblock %}
