@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Shinychu - VCR Mode{% endblock %}
+{% block title %}UPLOAD{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -11,7 +11,7 @@
         --green: #1eff00;
     }
 
-    /* --- EFECTOS CRT (Scanlines, Ruido, Vignette) --- */
+    /* EFECTOS CRT */
     .vignette::before {
         content: ''; position: absolute; inset: 0;
         background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
@@ -31,7 +31,7 @@
         background-size: 100% 4px; animation: scanlines 0.2s linear infinite;
     }
 
-    /* Animaciones Keyframes */
+    
     @keyframes noise { 0%, 100% { background-position: 0 0; } 10% { background-position: -5% -10%; } 20% { background-position: -15% 5%; } 30% { background-position: 7% -25%; } 40% { background-position: 20% 25%; } 50% { background-position: -25% 10%; } 60% { background-position: 15% 5%; } 70% { background-position: 0 15%; } 80% { background-position: 25% 35%; } 90% { background-position: -10% 10%; } }
     @keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 4px; } }
     @keyframes rgbText {
@@ -49,7 +49,7 @@
     .retro-text-shadow { text-shadow: 2px 2px 0px var(--blue); }
     .uploading { background: var(--green) !important; color: black !important; animation: blink 0.5s infinite; }
     
-    /* Estilo del input file nativo */
+    
     input[type="file"] { font-family: 'Press Start 2P', cursive; font-size: 0.7rem; color: white; width: 100%; }
 </style>
 {% endblock %}
@@ -112,7 +112,7 @@
 
 {% block scripts %}
 <script>
-    // --- RELOJ EN TIEMPO REAL ---
+    
     function updateTime() {
         const now = new Date();
         // Formato HH:MM:SS
@@ -124,11 +124,10 @@
         });
         document.getElementById('clock').innerText = timeString;
     }
-    // Actualizar cada segundo
+    
     setInterval(updateTime, 1000);
-    updateTime(); // Llamada inicial para no esperar 1 segundo
-
-    // --- Lógica de Copiar ---
+    updateTime(); 
+    
     function copyToClipboard(btn) {
         var copyText = document.getElementById("shareUrl");
         copyText.select();
@@ -137,7 +136,7 @@
 
         let originalText = btn.innerText;
         btn.innerText = "COPIED!";
-        btn.style.background = "#00ff00"; // Verde retro
+        btn.style.background = "#00ff00"; 
         btn.style.color = "black";
 
         setTimeout(() => {
@@ -147,7 +146,7 @@
         }, 2000);
     }
 
-    // --- Lógica de Pegar (Ctrl+V) ---
+    //Lógica de Pegar (Ctrl+V)
     document.addEventListener('paste', function(event) {
         const items = (event.clipboardData || event.originalEvent.clipboardData).items;
 
